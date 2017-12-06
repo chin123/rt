@@ -36,7 +36,8 @@ using namespace std;
 int record = INT_MAX;
 
 int cont = 1;
-
+int dnf = 0;
+int p2 = 0;
 
 void convert(auto a) {
 	cout << GREEN << a/1000 << RESET << " s " << GREEN << a % 1000 << RESET << " ms ";
@@ -45,6 +46,7 @@ void convert(auto a) {
 void timer() {
 	int counter = 0;
 	using namespace std::chrono_literals;
+	fflush(stdout);
 	while (cont) {
 		cout << '\r';
 		convert(counter);
@@ -58,6 +60,7 @@ void timer() {
 void insp() {
 	int counter = 15;
 	using namespace std::chrono_literals;
+	fflush(stdout);
 	while (counter >= 0 && cont) {
 		cout << '\r';
 		convert (counter * 1000);
@@ -65,26 +68,44 @@ void insp() {
 		fflush(stdout);
 		counter--;
 	}
-	cont = 0;
-	cout << '\n';
-}
-
-void wait() {
-	getch();
-	cont = 0;
+	if (counter <= 0) {
+		counter = 2;
+		p2 = 1;
+		fflush(stdout);
+		cout << LRED << "+2\n" << RESET; 
+		fflush(stdout);
+		while (counter >= 0 && cont) {
+			cout << '\r';
+			convert (counter * 1000);
+			std::this_thread::sleep_for(1s);
+			fflush(stdout);
+			counter--;
+		}
+		if (counter <= 0) {
+			dnf = 1;
+			p2 = 0;
+			fflush(stdout);
+			cout << LRED << "\nDNF\n" << RESET; 
+		}
+	}
 }
 
 void scramble() {
 	char moves[6] = {'F', 'B', 'L', 'R', 'U', 'D'};
+	char op[6] = {'B', 'F', 'R', 'L', 'D', 'U'};
 	char dirs[2] = {'\0', '`'};
 	char nos[2] = {'\0', '2'};
+
 	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	
 	default_random_engine generator(seed);
 	uniform_int_distribution<int> distribution(0,5);
 	auto move = bind(distribution, generator);
+	
 	default_random_engine gen2(seed);
 	uniform_int_distribution<int> dist2(0,1);
 	auto dir = bind(dist2, gen2);
+	
 	int m = move();
 	int d = dir();
 	int n = dir();
@@ -92,10 +113,35 @@ void scramble() {
 	if (n == 0)
 		cout << dirs[d];
 	cout << ORANGE << nos[n] << RESET << ' ';
-	for (int i = 0; i < 19; i++) {
+	char pm[20];
+	pm[0] = moves[m];
+	for (int i = 1; i < 20; i++) {
 		int t = move();
+		int f = 0;
 		while (t == m)
 			t = move();
+		int j,k;
+		f = 1;
+		int notop = 0;
+		for (j = i - 1; j >= 0; j--) { // So that stuff like F B F` don't happen
+			if (pm[j] == moves[t]) {
+				break;
+			}
+		}
+		if (j >= 0) {
+			for (k = j + 1; k < i; k++) {
+				if (pm[k] != op[t])
+					notop++;
+			}
+		} else {
+			notop = 1;
+		}
+		if (notop == 0) {
+			int temp = t;
+			while (t == temp || t == m)
+				t = move();
+		}
+
 		m = t;
 		d = dir();
 		n = dir();
@@ -103,6 +149,7 @@ void scramble() {
 		if (n == 0)
 			cout << dirs[d];
 		cout << ORANGE << nos[n] << RESET << ' ';
+		pm[i] = moves[m];
 
 	}
 	cout << '\n';
@@ -155,6 +202,9 @@ void solve() {
 			int mn = min(hist[s-1], hist[s-2]);
 			int sum = 0;
 			for (int i = s - 3; i >= 0 && s - i - 1 < 100; i--) {
+				if (hist[i] >= mn && hist[i] <= mx) {
+					sum += hist[i];
+				}
 				if (hist[i] > mx) {
 					sum += mx;
 					mx = hist[i];
@@ -163,9 +213,6 @@ void solve() {
 					sum += mn;
 					mn = hist[i];
 				} 
-				if (hist[i] >= mn && hist[i] <= mx) {
-					sum += hist[i];
-				}
 				ao[s - i - 1] = sum/(s - i - 2);
 			}
 			if (s < 100) {
@@ -263,56 +310,65 @@ void solve() {
 	
 		getch();
 	} else if (c == ' ') {
+		dnf = 0;
+		p2 = 0;
 		cout << "Inspection\n";
 		cont = 1;
 		thread second(insp);
-		thread third(wait);
-		second.join();
-		third.detach();
-		cout << "Time started.\n";
-		cont = 1;
-
-		auto a = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now().time_since_epoch()).count();
-		thread first(timer);
-
-		c = getch();
+		getch();
 		cont = 0;
-		auto b = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now().time_since_epoch()).count();
+		second.join();
+		if (!dnf) {
+			cout << "Time started.\n";
+			cont = 1;
 
-		first.join();
+			auto a = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now().time_since_epoch()).count();
+			thread first(timer);
+
+			c = getch();
+			cont = 0;
+			auto b = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now().time_since_epoch()).count();
+
+			first.join();
 
 
-		cout << ORANGE << "Your time is: " << RESET;
-		convert(b-a);
-		cout << '\n'; 
-		cout << LBLUE;
-		cout << "Press:\n";
-		cout << BOLD << "s: " << RESET << LBLUE << " to save the solve\n";
-		cout << BOLD << "2: " << RESET << LBLUE << " to save the solve with +2 s\n";
-		cout << BOLD << "u: " << RESET << LBLUE << " to not save.\n";
-		
-		c = getch();
+			cout << ORANGE << "Your time is: " << RESET;
+			if (p2) {
+				b += 2000;
+				cout << LRED << "(with +2) " << RESET;
+			}
+			convert(b-a);
+			cout << '\n'; 
+			cout << LBLUE;
+			cout << "Press:\n";
+			cout << BOLD << "s: " << RESET << LBLUE << " to save the solve\n";
+			cout << BOLD << "2: " << RESET << LBLUE << " to save the solve with +2 s (do not use this for inspection time +2)\n";
+			cout << BOLD << "u: " << RESET << LBLUE << " to not save.\n";
+			
+			c = getch();
 
-		if (c == 's') {
-			ofstream ofile("save.txt", ios::app);
-			ofile << b - a << '\n';
-			ofile.close();
-			cout << "Saved!\n";
+			if (c == 's') {
+				ofstream ofile("save.txt", ios::app);
+				ofile << b - a << '\n';
+				ofile.close();
+				cout << "Saved!\n";
+			}
+			if (c == '2') {
+				b += 2000;
+				ofstream ofile("save.txt", ios::app);
+				ofile << b - a << '\n';
+				ofile.close();
+				cout << "Saved!\n";
+			}
+
+			if (b - a < record) {
+				record = b - a;
+				cout << GREEN << BOLD;
+				cout << "New Best Record!\n";
+				cout << RESET;
+			}
 		}
-		if (c == '2') {
-			b += 2000;
-			ofstream ofile("save.txt", ios::app);
-			ofile << b - a << '\n';
-			ofile.close();
-			cout << "Saved!\n";
-		}
 
-		if (b - a < record) {
-			record = b - a;
-			cout << GREEN << BOLD;
-			cout << "New Best Record!\n";
-			cout << RESET;
-		}
 		cout << "Press any key to return to the main menu.\n";
 		
 		getch();
