@@ -16,3 +16,6 @@ Command Line Rubik's Cube Timer
 ![Stats](stats.png)  
 ![Log](log.png)  
 ![Record](record.png)  
+
+# License
+GNU GPL V3
