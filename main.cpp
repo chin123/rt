@@ -1,3 +1,21 @@
+/*  rt: command line rubiks cube timer
+    Copyright (C) 2017  Chinmaya Krishnan Mahesh
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+
 #include <iostream>
 #include <vector>
 #include <chrono>
@@ -8,6 +26,7 @@
 #include <cstdlib>
 #include <climits>
 #include <cstdio>
+#include <cstring>
 #include "getch.h"
 #include "colors.h"
 
@@ -249,6 +268,7 @@ void solve() {
 		thread second(insp);
 		thread third(wait);
 		second.join();
+		third.detach();
 		cout << "Time started.\n";
 		cont = 1;
 
@@ -301,7 +321,33 @@ void solve() {
 	solve();
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+	if (argc == 2) {
+		if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
+			cout << "Usage: ./rt [OPTIONS]\n";
+			cout << "Options:\n";
+			cout << "-h, --help: Print help screen\n";
+			cout << "-l, --license: Print license\n";
+			cout << "If no options specified, starts in interactive mode.\n";
+		} else if (strcmp(argv[1], "-l") == 0 || strcmp(argv[1], "--license") == 0) {
+			cout << "\
+			rt: command line rubiks cube timer. \n\
+			Copyright (C) 2017 Chinmaya Krishnan Mahesh.\n\n\
+			This program is free software: you can redistribute it and/or modify\n\
+			it under the terms of the GNU General Public License as published by\n\
+			the Free Software Foundation, either version 3 of the License, or\n\
+			(at your option) any later version.\n\n\
+			This program is distributed in the hope that it will be useful,\n\
+			but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
+			MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
+			GNU General Public License for more details.\n\n\
+			You should have received a copy of the GNU General Public License\n\
+			along with this program.  If not, see <https://www.gnu.org/licenses/>.\n";
+		} else {
+			cout << "Usage: ./rt [OPTIONS]\n";
+		}
+		return 0;
+	}
 	ifstream ifile("save.txt", ios::in);
 	
 	if (ifile) {
