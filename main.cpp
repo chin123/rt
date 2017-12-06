@@ -93,7 +93,7 @@ void insp() {
 void scramble() {
 	char moves[6] = {'F', 'B', 'L', 'R', 'U', 'D'};
 	char op[6] = {'B', 'F', 'R', 'L', 'D', 'U'};
-	char dirs[2] = {'\0', '`'};
+	char dirs[2] = {'\0', '\''};
 	char nos[2] = {'\0', '2'};
 
 	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -258,7 +258,8 @@ void solve() {
 			for (int i = 0; i < 20; i++) {
 				for (int j = 0; j < s - x; j++) {
 					if (bar[i][j] == '.') {
-						cout << "\u25A0";
+						//cout << "\u25A0";
+						cout << BGORANGE << ' ' << RESET;
 					} else {
 						cout << bar[i][j];
 					}
