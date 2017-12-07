@@ -11,11 +11,11 @@ Command Line Rubik's Cube Timer
 4. Statistics Page with ao3, ao5, ao50, ao100, and progress graph
 
 # Screenshots
-![Main](main.png)  
-![Solve](solve.png)  
-![Stats](stats.png)  
-![Log](log.png)  
-![Record](record.png)  
+![Main](screenshots/main.png)  
+![Solve](screenshots/solve.png)  
+![Stats](screenshots/stats.png)  
+![Log](screenshots/log.png)  
+![Record](screenshots/record.png)  
 
 # License
-GNU GPL V3
+GNU GPL V3. For more information, view [LICENSE](LICENSE).
