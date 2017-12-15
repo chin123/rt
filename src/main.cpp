@@ -17,6 +17,7 @@
 
 
 #include <iostream>
+#include <functional>
 #include <vector>
 #include <chrono>
 #include <thread>
@@ -28,6 +29,9 @@
 #include <cstring>
 #include "getch.h"
 #include "colors.h"
+extern "C" {
+#include "search.h"
+}
 
 
 using namespace std;
@@ -94,61 +98,23 @@ void scramble() {
 	char dirs[2] = {'\0', '\''};
 	char nos[2] = {'\0', '2'};
 
-	random_device rd;
+	char rep[64];
 
-	default_random_engine gen1(rd());
-	uniform_int_distribution<int> dist1(0, 5);
-	auto move = bind(dist1, gen1);
 
-	default_random_engine gen2(rd());
-	uniform_int_distribution<int> dist2(0, 1);
-	auto dir = bind(dist2, gen2);
-
-	int m = move();
-	int d = dir();
-	int n = dir();
-	cout << YELLOW << moves[m] << RESET;
-	if (n == 0)
-		cout << dirs[d];
-	cout << ORANGE << nos[n] << RESET << ' ';
-	char pm[20];
-	pm[0] = moves[m];
-	for (int i = 1; i < 20; i++) {
-		int t = move();
-		int f = 1;
-		while (t == m)
-			t = move();
-		int j, k;
-		int notop = 0;
-		for (j = i - 1; j >= 0; j--) { // So that stuff like F B F` don't happen
-			if (pm[j] == moves[t])
-				break;
-		}
-		if (j >= 0) {
-			for (k = j + 1; k < i; k++) {
-				if (pm[k] != op[t])
-					++notop;
-			}
-		} else {
-			notop = 1;
-		}
-		if (notop == 0) {
-			int temp = t;
-			while (t == temp || t == m)
-				t = move();
-		}
-
-		m = t;
-		d = dir();
-		n = dir();
-		cout << YELLOW << moves[m] << RESET;
-		if (n == 0)
-			cout << dirs[d];
-		cout << ORANGE << nos[n] << RESET << ' ';
-		pm[i] = moves[m];
-
+	char *sol = NULL;
+	while (sol == NULL) {
+		cout << "trying " << rep << '\n';
+		sol = solution(
+			rep,
+			24,
+			1000,
+			0,
+			"cache"
+		);
 	}
-	cout << '\n';
+	puts(sol);
+	free(sol);
+
 }
 
 void solve() {
