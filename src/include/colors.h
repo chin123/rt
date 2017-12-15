@@ -1,3 +1,8 @@
+#ifndef __COLORS_H__
+#define __COLORS_H__
+
+//ANSI Escape codes for terminal colours
+
 #define RESET "\033[0m"
 #define BOLD "\033[01m"
 #define RED "\033[31m"
@@ -14,3 +19,5 @@
 #define BGGREEN "\033[42m"
 #define BGORANGE "\033[43m"
 #define BGBLUE "\033[44m"
+
+#endif //__COLORS_H__
