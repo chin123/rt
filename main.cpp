@@ -40,7 +40,7 @@ int dnf = 0;
 int p2 = 0;
 
 void convert(auto a) {
-	cout << GREEN << a/1000 << RESET << " s " << GREEN << a % 1000 << RESET << " ms ";
+	cout << GREEN << a / 1000 << RESET << " s " << GREEN << a % 1000 << RESET << " ms ";
 }
 
 void timer() {
@@ -50,8 +50,8 @@ void timer() {
 	while (cont) {
 		cout << '\r';
 		convert(counter);
-		fflush(stdout);
-		std::this_thread::sleep_for(10ms);
+		cout.flush();
+		this_thread::sleep_for(10ms);
 		counter += 10;
 	}
 	cout << '\n';
@@ -60,12 +60,12 @@ void timer() {
 void insp() {
 	int counter = 15;
 	using namespace std::chrono_literals;
-	fflush(stdout);
+	cout.flush();
 	while (counter >= 0 && cont) {
 		cout << '\r';
-		convert (counter * 1000);
-		std::this_thread::sleep_for(1s);
-		fflush(stdout);
+		convert(counter * 1000);
+		this_thread::sleep_for(1s);
+		cout.flush();
 		counter--;
 	}
 	if (counter <= 0) {
@@ -73,36 +73,36 @@ void insp() {
 		p2 = 1;
 		fflush(stdout);
 		cout << LRED << "+2\n" << RESET; 
-		fflush(stdout);
+		cout.flush();
 		while (counter >= 0 && cont) {
 			cout << '\r';
-			convert (counter * 1000);
-			std::this_thread::sleep_for(1s);
-			fflush(stdout);
+			convert(counter * 1000);
+			this_thread::sleep_for(1s);
+			cout.flush();
 			counter--;
 		}
 		if (counter <= 0) {
 			dnf = 1;
 			p2 = 0;
-			fflush(stdout);
+			cout.flush();
 			cout << LRED << "\nDNF\n" << RESET; 
 		}
 	}
 }
 
 void scramble() {
-	char moves[6] = {'F', 'B', 'L', 'R', 'U', 'D'};
-	char op[6] = {'B', 'F', 'R', 'L', 'D', 'U'};
-	char dirs[2] = {'\0', '\''};
-	char nos[2] = {'\0', '2'};
+	char const moves[] = {'F', 'B', 'L', 'R', 'U', 'D'};
+	char const op[] = {'B', 'F', 'R', 'L', 'D', 'U'};
+	char const dirs[] = {'\0', '\''};
+	char const nos[2] = {'\0', '2'};
 
-	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	random_device rd;
 	
-	default_random_engine generator(seed);
+	default_random_engine generator(rd);
 	uniform_int_distribution<int> distribution(0,5);
 	auto move = bind(distribution, generator);
 	
-	default_random_engine gen2(seed);
+	default_random_engine gen2(rd);
 	uniform_int_distribution<int> dist2(0,1);
 	auto dir = bind(dist2, gen2);
 	
@@ -117,11 +117,10 @@ void scramble() {
 	pm[0] = moves[m];
 	for (int i = 1; i < 20; i++) {
 		int t = move();
-		int f = 0;
+		int f = 1;
 		while (t == m)
 			t = move();
-		int j,k;
-		f = 1;
+		int j, k;
 		int notop = 0;
 		for (j = i - 1; j >= 0; j--) { // So that stuff like F B F` don't happen
 			if (pm[j] == moves[t]) {
@@ -188,14 +187,13 @@ void solve() {
 		ifstream ifile("save.txt", ios::in);
 		if (!ifile) {
 			cout << "No History or Unable to open history file.\n";
-		}
-		else {
+		} else {
 			int c;
 			vector<int> hist;
-		
-			while (ifile >> c) {
+
+			while (ifile >> c)
 				hist.push_back(c);
-			}
+
 			int s = hist.size();
 			int ao[100];
 			int mx = max(hist[s-1], hist[s-2]);
@@ -220,7 +218,7 @@ void solve() {
 					ao[i] = ao[i-1];
 				}
 			}
-			
+
 			cout << BOLD << BLUE << "ao3: " << RESET;
 			convert(ao[2]);
 			cout << "| " << BOLD << BLUE << "ao5: " << RESET;
@@ -241,17 +239,15 @@ void solve() {
 			
 			cout << BLUE << BOLD << "Progress Chart:\n" << RESET;
 			char bar[20][25];
-			int conversion = mx/20;
-			int i,x;
-			i = x = (s > 25)? s - 25 : 0;
+			int conversion = mx / 20;
+			int i, x;
+			i = x = (s > 25) ? s - 25 : 0;
 			for (; i < s; i++) {
 				int j;
-				for (j = 0; j < hist[i]/conversion; j++) {
+				for (j = 0; j < hist[i]/conversion; j++)
 					bar[20 - j - 1][i] = '.';
-				}
-				for (; j < 20; j++) {
+				for (; j < 20; j++)
 					bar[20 - j - 1][i] = ' ';
-				}
 
 			}
 			cout << YELLOW;
@@ -292,14 +288,13 @@ void solve() {
 			ifstream ifile("save.txt", ios::in);
 			if (!ifile) {
 				cout << "No History or Unable to open history file.\n";
-			}
-			else {
+			} else {
 				int c;
 				vector<int> hist;
 		
-				while (ifile >> c) {
+				while (ifile >> c)
 					hist.push_back(c);
-				}
+
 				int s = hist.size();
 				for (int i = s - 1; i >= 0; i--) {
 					cout << s - i << ". ";
@@ -323,10 +318,11 @@ void solve() {
 			cout << "Time started.\n";
 			cont = 1;
 
+			//Fairly certain theres a neatr way to do this
 			auto a = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now().time_since_epoch()).count();
 			thread first(timer);
 
-			c = getch();
+			cin.get(c);
 			cont = 0;
 			auto b = chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now().time_since_epoch()).count();
 
@@ -338,7 +334,7 @@ void solve() {
 				b += 2000;
 				cout << LRED << "(with +2) " << RESET;
 			}
-			convert(b-a);
+			convert(b - a);
 			cout << '\n'; 
 			cout << LBLUE;
 			cout << "Press:\n";
@@ -346,7 +342,7 @@ void solve() {
 			cout << BOLD << "2: " << RESET << LBLUE << " to save the solve with +2 s (do not use this for inspection time +2)\n";
 			cout << BOLD << "u: " << RESET << LBLUE << " to not save.\n";
 			
-			c = getch();
+			cin.get(c);
 
 			if (c == 's') {
 				ofstream ofile("save.txt", ios::app);
@@ -372,7 +368,7 @@ void solve() {
 
 		cout << "Press any key to return to the main menu.\n";
 		
-		getch();
+		cin.get();
 	}
 
 	solve();
