@@ -1,4 +1,4 @@
-#ifdef __linux__
+#if defined (__linux__) || defined (__APPLE__) || defined (__unix)
 
 #include <unistd.h>
 #include <termios.h>
@@ -24,5 +24,9 @@ int getch(void)
 #include <conio.h>
 
 #define CLEAR "cls"
+
+#else
+
+#error "Unsupported OS!"
 
 #endif
